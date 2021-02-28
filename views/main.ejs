@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <%- include('head') %>
+  <body>
+    <%- include('navbar') %>
+    <div class="container">
+      <% if(user){ %>
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <form
+            class="form-horizontal"
+            id="post-form"
+            action="/post"
+            method="post"
+            enctype="multipart/form-data"
+            name="post-form"
+          >
+            <textarea
+              id="post"
+              name="content"
+              maxlength="140"
+              required
+            ></textarea>
+            <div class="img-preview"></div>
+            <input id="img-count" type="hidden" name="count" value="0" />
+            <label id="img-label" for="img">사진 업로드</label>
+            <input id="img" name="img" type="file" accept="imgae/*" multiple />
+            <input name="refresh" type="hidden" value="0" />
+            <div class="form-footer">
+              <button class="btn btn-default" type="submit">업로드</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      <% } %>
+      <div class="posts">
+        <% let count=0; for(let post of posts){ %>
+          <article>
+        <div class="panel panel-default">
+          <div class="panel-head">
+            <%= post.user.nick %>
+            <div class="follow">
+              <input
+                class="post-user-id"
+                type="hidden"
+                value="<%= post.user.id %>"
+              />
+              <% const follow = user &&
+              user.Followings.map(f=>f.id).includes(post.user.id);
+              if(user&&user.id !== post.user.id && !follow){ %>
+              <button class="user-follow">팔로우하기</button>
+              <% }else if(post.user.id && follow) { %>
+              <button class="user-unfollow">언팔로우하기</button>
+              <% }else{ %>
+                <!--게시글 드롭다운버튼-->
+              <div class="dropdown" id="post<%=post.id%>-dropdown">
+                <button
+                  type="button"
+                  class="btn btn dropdown-toggle"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                <span class="glyphicon glyphicon-option-vertical"></span>
+              </button>
+              <ul class="dropdown-menu" id="dropdown-menu-post<%=post.id%>" role="menu" aria-label="dLabel">
+                <li id="dropdown-post-update">수정</li>
+                <li id="dropdown-post-delete">삭제</li>
+              </ul>
+              <!--글 수정 모달-->
+              <div
+                class="modal fade"
+                id="update-Modal<%=post.id%>"
+                tabindex="-1"
+                role="dialog"
+                aria-hidden="true"
+              >
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <button
+                        type="button"
+                        class="close"
+                        data-dismiss="modal"
+                        aria-label="Close"
+                      >
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                      <h4 class="modal-title" id="update-post">글 수정하기</h4>
+                    </div>
+                    <div class="modal-body">
+                      <form
+                        action="/post/<%=post.id%>"
+                        method="post"
+                        enctype="multipart/form-data"
+                      >
+                        <div class="form-group">
+                          <label for="origin-content" class="control-label"
+                            >수정할 글</label
+                          >
+                          <textarea
+                            type="text"
+                            maxlength="140"
+                            class="form-control"
+                            id="origin-content"
+                            name="content"
+                            required
+                          ><%=post.content%></textarea>
+                          <div class="origin-img"></div>
+                          <div class="filebox">
+                            <lable for="update-img">사진 업로드</lable>
+                            <input
+                              id="update-img"
+                              type="file"
+                              accept="image/*"
+                            />
+                          </div>
+                        </div>
+                      </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button
+                        id="postModal-update-btn"
+                        type="button"
+                        class="btn btn-primary"
+                      >
+                        변경하기
+                      </button>
+                      <button
+                        type="button"
+                        id="postModal-cancel-btn"
+                        class="btn btn-default"
+                        data-dismiss="modal"
+                      >
+                        취소하기
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!---->
+              <% } %>
+            </div>
+          </div>
+          <div class="panel-body"><%= post.content %></div>
+          <input id="postId" type="hidden" value="<%=post.id%>" />
+          <% for(let img of imgs){ if(post.id === img.postId){ %>
+          <div class="post-img">
+            <img
+              class="img-responsive"
+              src="<%=img.url%>"
+              alt="섬네일"
+              alt="Responsive image"
+            />
+            <input type="hidden" value="<%=imgs.id%>" id="img-id" />
+          </div>
+          <% }} %>
+          <div class="like" id="like<%=count%>" value="<%=post.id%>">
+          <% if(likeList.length===0){ %>
+            <div class="post-NLike">
+              <button type="button" class="btn btn" aria-label="Left Align">
+                <span
+                  id="heart"
+                  class="glyphicon glyphicon-heart-empty"
+                  aria-hidden="true"
+                ></span>
+            </div>
+            <% }else{ let check = false; for(let likeId of likeList){  if(likeId === post.id){ check = true; break;} } if(check){ %>
+              <div class="post-Like">
+                <button type="button" class="btn btn" aria-label="Left Align" >
+                  <span
+                    id="heart"
+                    class="glyphicon glyphicon-heart"
+                    aria-hidden="true"
+                  ></span>
+              </div>
+              <%  }else{ %>
+              <div class="post-NLike">
+                <button type="button" class="btn btn" aria-label="Left Align" >
+                  <span
+                    id="heart"
+                    class="glyphicon glyphicon-heart-empty"
+                    aria-hidden="true"
+                  ></span>
+              </div>
+             <% }} %>
+            </div>
+        </div>
+        <input id="postId" type="hidden" value="<%=post.id%>" />
+      </article>
+        <% count++; } %>
+        <input id="postCount" type="hidden" value="<%=count%>">
+      </div>
+      <div class="last-block">
+        <button id="more-btn" type="button" class="btn btn-info">More</button>
+      </div>
+    </div>
+    <script src="/base.js">
+    </script>
+  </body>
+</html>

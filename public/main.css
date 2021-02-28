@@ -1,0 +1,37 @@
+body {
+  padding-top: 70px;
+  margin: 0 auto;
+}
+.form-horizontal {
+  text-align: center;
+}
+textarea {
+  border-radius: 4px;
+  width: 500px;
+  height: 100px;
+  padding: 10px;
+  border: 1px solid silver;
+  resize: vertical;
+}
+.form-footer {
+  float: right;
+}
+img {
+  max-width: 100%;
+  height: auto;
+}
+.img-preview {
+  height: auto;
+  overflow: hidden;
+}
+.post-img {
+  padding: 10px;
+}
+.like {
+  padding: 10px;
+  text-align: center;
+}
+.last-block {
+  text-align: center;
+  padding-bottom: 20px;
+}
