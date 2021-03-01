@@ -45,13 +45,6 @@
                 type="hidden"
                 value="<%= post.user.id %>"
               />
-              <% const follow = user &&
-              user.Followings.map(f=>f.id).includes(post.user.id);
-              if(user&&user.id !== post.user.id && !follow){ %>
-              <button class="user-follow">팔로우하기</button>
-              <% }else if(post.user.id && follow) { %>
-              <button class="user-unfollow">언팔로우하기</button>
-              <% }else{ %>
                 <!--게시글 드롭다운버튼-->
               <div class="dropdown" id="post<%=post.id%>-dropdown">
                 <button
@@ -140,7 +133,6 @@
               </div>
             </div>
             <!---->
-              <% } %>
             </div>
           </div>
           <div class="panel-body"><%= post.content %></div>

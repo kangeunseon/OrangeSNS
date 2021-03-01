@@ -88,22 +88,10 @@ $(document).ready(function () {
           let html = "";
           for (let post of res.data.posts) {
             html += `<article>
-                    <div class="panel panel-default">
-                    <div class="panel-head">${post.user.nick}</div>`;
-            html += `<div class="follow">
-                        <input class="post-user-id" type="hidden" value="${post.user.id}">`;
-            const follow = myId && res.data.followings.includes(post.user.id);
-            console.log("post-user-id:", post.user.id, " my-id: ", myId);
-            if (post.user.id != myId && !follow) {
-              html += `<button class="user-follow">팔로우하기</button>`;
-            } else if (post.user.id != myId && follow) {
-              html += `<button class="user-unfollow">언팔로우하기</button>`;
-            } else {
-            }
-            html += `</div>`;
-
-            html += `<div class="panel-body">${post.content}</div>
-                      <input id="postId" type="hidden" value="${post.id}" />
+                      <div class="panel panel-default">
+                        <div class="panel-head">${post.user.nick}</div>
+                        <div class="panel-body">${post.content}</div>
+                          <input id="postId" type="hidden" value="${post.id}" />
                   `;
             for (let img of res.data.imgs) {
               if (post.id === img.postId) {

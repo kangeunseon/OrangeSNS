@@ -95,16 +95,11 @@ router.get("/more", async (req, res, next) => {
       order: [["createdAt", "DESC"]],
     });
     let likeList = new Array();
-    let followList = new Array();
     if (req.user) {
       //현재 접속한 유저 아이디 찾기
       const user = await User.findOne({
         where: { id: req.user.id },
       });
-      const followings = await user.getFollowings();
-      for (let following of followings) {
-        followList.push(following.id);
-      }
       const liked = await user.getLiked();
       liked.reverse();
       for (let like of liked) {
@@ -124,7 +119,6 @@ router.get("/more", async (req, res, next) => {
       posts: posts,
       imgs: imgs,
       likeList: likeList,
-      followings: followList,
     });
   } catch (error) {
     console.error(error);
