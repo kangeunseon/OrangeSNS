@@ -1,8 +1,7 @@
 $(document).ready(function () {
   //*사진 여러장 업로드 코드 수정하기*
+  let uploadNum = 0; //업로드 사진 개수 카운트
   if (document.getElementById("img")) {
-    let uploadNum = 0;
-    let index = 0;
     document.getElementById("img").addEventListener("change", function (e) {
       const formData = new FormData();
       const length = this.files.length;
@@ -44,25 +43,31 @@ $(document).ready(function () {
       console.log("현재 올린 사진 : ", this.files);
       for (let i = 0; i < length; i++) {
         formData.append("img", this.files[i]);
-        index++;
       }
       axios
         .post("/post/img", formData)
         .then((res) => {
           let url = JSON.parse(res.data);
-          console.log(url);
+          let index = document.getElementById("img-count").value;
           let img_html = "";
+          let imgClassName = "img-preview";
           for (let i = 0; i < url.length; i++) {
             console.log("미리보기", url[i]);
-            img_html += `<div class="img-preview${index}">
-                  <img id="img-preview${index}" src="${url[i].url}" width="250" alt="미리보기">
-                  <input id="url" type="hidden" name="img_url" value="${url[i].url}">
-                  <input id="name" type="hidden" name="img_name" value="${url[i].name}">
-                  <input id="size" type="hidden" name="img_size" value="${url[i].size}">
+            img_html +=
+              `<div id="img-preview${index}">
+                  <img id="img${index}" src="${url[i].url}" width="250" alt="미리보기">
+                    <input id="url" type="hidden" name="img_url" value="${url[i].url}">
+                    <input id="name" type="hidden" name="img_name" value="${url[i].name}">
+                    <input id="size" type="hidden" name="img_size" value="${url[i].size}">
+                    <button type="button" class="close-btn" aria-label="Close" onclick="removeImg('` +
+              imgClassName +
+              `',${index})" >
+                      <span aria-hidden="true">&times;</span>
+                    </button>
                   </div>`;
             console.log("json 길이 : ", url.length);
-            console.log("서버통신index:", index);
             console.log(img_html);
+            index++;
             document.getElementById("img-count").value = index;
           }
           $(".img-preview").append(img_html);
@@ -72,6 +77,29 @@ $(document).ready(function () {
         });
     });
   }
+
+  //onclick 함수 앞에 window 붙이기
+  //게시글 업로드 미리보기 파일 폴더에서 지우귀
+  window.removeImg = function (className, index) {
+    if (className === "img-preview") {
+      let img_name = $(`#img${index}`).attr("src").substr(5); // src 앞에 /img/ 지우기
+      axios
+        .delete(`/post/img?img_name=${img_name}`)
+        .then(() => {
+          document.getElementById("img-count").value -= 1;
+          if (uploadNum > 0) {
+            uploadNum--;
+          }
+          console.log(document.getElementById("img-count").value);
+          $(`#img-preview${index}`).remove();
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    } else if (className === "origin-img-preview") {
+      $(`#origin-img-preview${index}`).hide();
+    }
+  };
 
   //More클릭 시 게시글 5개 추가
   document.getElementById("more-btn").addEventListener("click", () => {
@@ -88,10 +116,103 @@ $(document).ready(function () {
           let html = "";
           for (let post of res.data.posts) {
             html += `<article>
-                      <div class="panel panel-default">
+                      <div class="panel panel-default" id="post${post.id}">
                         <div class="panel-head">${post.user.nick}</div>
-                        <div class="panel-body">${post.content}</div>
-                          <input id="postId" type="hidden" value="${post.id}" />
+                        <!-게시글 드롭다운버튼-->
+                        <div class="dropdown" id="post${post.id}-dropdown">
+                          <button
+                            type="button"
+                            class="btn btn dropdown-toggle"
+                            data-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                          >
+                          <span class="glyphicon glyphicon-option-vertical"></span>
+                        </button>
+                        <ul class="dropdown-menu" id="dropdown-menu-post${post.id}" role="menu" aria-label="dLabel">
+                          <li id="dropdown-post-update">수정</li>
+                          <li id="dropdown-post-delete">삭제</li>
+                        </ul>
+                        <!--글 수정 모달-->
+                        <div
+                          class="modal fade"
+                          id="update-Modal${post.id}"
+                          tabindex="-1"
+                          role="dialog"
+                          aria-hidden="true"
+                        >
+                          <div class="modal-dialog">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <button
+                                  type="button"
+                                  class="close"
+                                  id="update-Modal-closeBtn"
+                                  data-dismiss="modal"
+                                  aria-label="Close"
+                                >
+                                  <span aria-hidden="true">&times;</span>
+                                </button>
+                                <h4 class="modal-title" id="update-post">글 수정하기</h4>
+                              </div>
+                              <div class="modal-body">
+                                <form
+                                  id="form${post.id}"
+                                  action="/post/${post.id}"
+                                  method="post"
+                                  enctype="multipart/form-data"
+                                >
+                                  <div class="form-group">
+                                    <label for="origin-content" class="control-label"
+                                      >수정할 글</label
+                                    >
+                                    <textarea
+                                      type="text"
+                                      maxlength="140"
+                                      class="form-control"
+                                      id="origin-content"
+                                      name="content"
+                                      required
+                                    >${post.content}</textarea>
+                                    <div class="origin-img-preview${post.id}"></div>
+                                    <div class="add-img-preview${post.id}"></div>
+                                    <div class="filebox">
+                                      <lable for="update-img">사진 업로드</lable>
+                                      <input
+                                        id="update-img"
+                                        type="file"
+                                        accept="image/*"
+                                      />
+                                    </div>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button
+                                      id="postModal-update-btn"
+                                      type="submit"
+                                      class="btn btn-primary"
+                                    >
+                                      변경하기
+                                    </button>
+                                    <button
+                                      type="button"
+                                      id="postModal-cancel-btn"
+                                      class="btn btn-default"
+                                      data-dismiss="modal"
+                                    >
+                                      취소하기
+                                    </button>
+                                  </div>
+                                </form>
+                              </div>
+                              
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="panel-body">${post.content}</div>  
+                      <input id="postId" type="hidden" value="${post.id}" />
+                      <div id="post${post.id}-imgs">
                   `;
             for (let img of res.data.imgs) {
               if (post.id === img.postId) {
@@ -106,6 +227,7 @@ $(document).ready(function () {
                         </div>`;
               }
             }
+            html += `</div>`;
             let index = parseInt(postCount - 1) + parseInt(count);
             html += `<div class="like" id="like${index}" value="${post.id}">`;
             if (res.data.likeList.length === 0) {
@@ -251,8 +373,72 @@ $(document).ready(function () {
   //게시글 수정
   $(document).on("click", "#dropdown-post-update", function () {
     const postId = $(this).parent().attr("id").substr(18);
-    console.log(postId);
+    let html = "";
+    let imgClassName = "origin-img-preview";
+    let count = 1;
+    $(`#post${postId}-imgs`)
+      .children()
+      .each(function (index) {
+        let origin_img = $(this).children();
+        let origin_imgId = origin_img.next().val();
+        console.log(
+          "src : ",
+          origin_img.attr("src"),
+          ",",
+          index,
+          ":",
+          origin_imgId
+        );
+        html +=
+          `<div id="origin-img-preview${index}">
+                  <img id="origin-img${index}" src="${origin_img.attr(
+            "src"
+          )}" alt="섬네일"/>
+                  <input type="hidden" value=${origin_imgId} id="originImg-id"/>
+                  <button type="button" class="close-btn" aria-label="Close" onclick="removeImg('` +
+          imgClassName +
+          `',${index})" >
+                      <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>`;
+        count = index + 1;
+      });
+    $(`.origin-img-preview${postId}`).append(html);
     $(`#update-Modal${postId}`).modal("show");
+    $(document).on("change", "update-img", function () {
+      //새로운 이미지 추가
+      const length = this.files.length;
+      console.log(length);
+    });
+    $(document).on("click", "#postModal-update-btn", function () {
+      console.log("업데이트버튼 누름", count);
+      $(document).on("submit", `#form${postId}`, function (event) {
+        event.preventDefault();
+        let content = $(this).find("[name=content]").val(); //form-content 가져오기
+        let origin_imgs = $(this).find(`.origin-img-preview${postId}`);
+        let add_imgs = $(this).find(`.add-img-preview${postId}`);
+        console.log("변경된 content", content);
+        console.log(origin_imgs.children().length, add_imgs.children().length);
+        for (let i = 0; i < origin_imgs.children().length; i++) {
+          if ($(`#origin-img-preview${i}`).is(":hidden")) {
+            //이미지 삭제 체크
+            let hide_imgId = $(`#origin-img-preview${i}`)
+              .children()
+              .next()
+              .val();
+            console.log(hide_imgId);
+          }
+        }
+      });
+    });
+    $(document).on("click", "#postModal-cancel-btn", function () {
+      $(`.origin-img-preview${postId} *`).remove();
+      $(`.add-img-preview${postId} *`).remove();
+    });
+    $(document).on("click", "#update-Modal-closeBtn", function () {
+      $(`.origin-img-preview${postId} *`).remove();
+      $(`.add-img-preview${postId} *`).remove();
+    });
   });
 
   //게시글 삭제

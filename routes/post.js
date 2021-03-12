@@ -45,6 +45,15 @@ router.post("/img", isLoggedIn, upload.array("img", 4), (req, res) => {
   res.json(jsonUrl);
 });
 
+//미리보기 사진 삭제
+router.delete("/img", isLoggedIn, (req, res) => {
+  const img_path = "./uploads/" + req.query.img_name;
+  console.log(img_path);
+  fs.unlink(img_path, () => {
+    res.send("success");
+  });
+});
+
 const upload2 = multer();
 
 router.post(
