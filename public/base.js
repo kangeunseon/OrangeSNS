@@ -98,6 +98,8 @@ $(document).ready(function () {
         });
     } else if (className === "origin-img-preview") {
       $(`#origin-img-preview${index}`).hide();
+    } else if (className === "add-img-preview") {
+      $(`#add-img-preview${index}`).hide();
     }
   };
 
@@ -117,8 +119,12 @@ $(document).ready(function () {
           for (let post of res.data.posts) {
             html += `<article>
                       <div class="panel panel-default" id="post${post.id}">
-                        <div class="panel-head">${post.user.nick}</div>
-                        <!-게시글 드롭다운버튼-->
+                        <div class="panel-head">${post.user.nick}
+                        <div class="set-post>
+                        <input class="post-user-id" type="hidden" value="${post.user.id}">`;
+
+            if (myId && myId == post.user.id) {
+              html += `  <!-게시글 드롭다운버튼-->
                         <div class="dropdown" id="post${post.id}-dropdown">
                           <button
                             type="button"
@@ -182,6 +188,7 @@ $(document).ready(function () {
                                         id="update-img"
                                         type="file"
                                         accept="image/*"
+                                        multiple
                                       />
                                     </div>
                                   </div>
@@ -208,8 +215,10 @@ $(document).ready(function () {
                             </div>
                           </div>
                         </div>
+                        </div>`;
+            }
+            html += `</div>
                       </div>
-
                       <div class="panel-body">${post.content}</div>  
                       <input id="postId" type="hidden" value="${post.id}" />
                       <div id="post${post.id}-imgs">
@@ -375,20 +384,12 @@ $(document).ready(function () {
     const postId = $(this).parent().attr("id").substr(18);
     let html = "";
     let imgClassName = "origin-img-preview";
-    let count = 1;
     $(`#post${postId}-imgs`)
       .children()
       .each(function (index) {
+        //origin-img-preview
         let origin_img = $(this).children();
         let origin_imgId = origin_img.next().val();
-        console.log(
-          "src : ",
-          origin_img.attr("src"),
-          ",",
-          index,
-          ":",
-          origin_imgId
-        );
         html +=
           `<div id="origin-img-preview${index}">
                   <img id="origin-img${index}" src="${origin_img.attr(
@@ -401,41 +402,118 @@ $(document).ready(function () {
                       <span aria-hidden="true">&times;</span>
                   </button>
                 </div>`;
-        count = index + 1;
       });
     $(`.origin-img-preview${postId}`).append(html);
     $(`#update-Modal${postId}`).modal("show");
-    $(document).on("change", "update-img", function () {
+    let add_img_index = 0;
+    let count = 0; //이미지 프리뷰 카운트
+    let img_sum = 0;
+    $(document).on("change", "#update-img", function () {
+      //추가한 사진 미리보기
       //새로운 이미지 추가
-      const length = this.files.length;
-      console.log(length);
+      const length = this.files.length; //업로드한 파일 길이
+      let add_imgClassName = "add-img-preview";
+      let origin_imgs = $(this).parent().prev().prev();
+      let origin_imgs_length = origin_imgs.children().length;
+      let add_imgs = $(this).parent().prev();
+      let add_imgs_length = add_imgs.children().length;
+      for (let i = 0; i < origin_imgs.children().length; i++) {
+        if ($(`#origin-img-preview${i}`).is(":hidden")) {
+          //이미지 삭제 체크
+          origin_imgs_length--;
+        }
+      }
+      for (let i = 0; i < add_imgs.children().length; i++) {
+        if ($(`#add-img-preview${i}`).is(":hidden")) {
+          //이미지 삭제 체크
+          add_imgs_length--;
+        }
+      }
+      img_sum = origin_imgs_length + add_imgs_length;
+      console.log("최종", img_sum);
+      if (img_sum + length > 4 || img_sum > 4 || length > 4) {
+        alert("사진은 최대 4장까지만 가능합니다.");
+        return;
+      } else {
+        const formData = new FormData();
+        for (let i = 0; i < length; i++) {
+          formData.append("img", this.files[i]); //새로운 사진 form에 추가
+        }
+        axios
+          .post("/post/img", formData)
+          .then((res) => {
+            let url = JSON.parse(res.data);
+            let addHtml = "";
+            for (let i = 0; i < url.length; i++) {
+              addHtml +=
+                `<div id="add-img-preview${add_img_index}">
+              <img id="add-img${add_img_index}" src="${url[i].url}" alt="섬네일"/>
+              <input id="name" type="hidden" name="img_name" value="${url[i].name}">
+              <input id="size" type="hidden" name="img_size" value="${url[i].size}">
+              <button type="button" class="close-btn" aria-label="Close" onclick="removeImg('` +
+                add_imgClassName +
+                `',${add_img_index})" >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>`;
+              add_img_index++;
+            }
+            $(`.add-img-preview${postId}`).append(addHtml);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      }
     });
     $(document).on("click", "#postModal-update-btn", function () {
-      console.log("업데이트버튼 누름", count);
+      //수정하기 click event
       $(document).on("submit", `#form${postId}`, function (event) {
-        event.preventDefault();
+        event.preventDefault(); //submit event멈추고 axios실행
         let content = $(this).find("[name=content]").val(); //form-content 가져오기
         let origin_imgs = $(this).find(`.origin-img-preview${postId}`);
+        let origin_imgs_length = origin_imgs.children().length;
         let add_imgs = $(this).find(`.add-img-preview${postId}`);
+        let add_imgs_length = add_imgs.children().length;
         console.log("변경된 content", content);
         console.log(origin_imgs.children().length, add_imgs.children().length);
-        for (let i = 0; i < origin_imgs.children().length; i++) {
+        let del_imgList = new Array(); //삭제할 이미지 id배열
+        let add_imgList = new Array(); //추가한 이미지 객체 배열
+        for (let i = 0; i < origin_imgs_length; i++) {
           if ($(`#origin-img-preview${i}`).is(":hidden")) {
             //이미지 삭제 체크
             let hide_imgId = $(`#origin-img-preview${i}`)
               .children()
               .next()
               .val();
-            console.log(hide_imgId);
+            del_imgList.push(hide_imgId);
           }
         }
+        for (let i = 0; i < add_imgs_length; i++) {
+          if ($(`#add-img-preview${i}`).is(":visible")) {
+            add_imgList.push({
+              url: $(`#add-img-preview${i}`).children().attr("src"),
+              name: $(`#add-img-preview${i}`).children().next().val(),
+              size: $(`#add-img-preview${i}`).children().next().next().val(),
+            });
+          }
+        }
+        axios
+          .patch(`/post/${postId}`, { content, del_imgList, add_imgList })
+          .then(() => {
+            location.reload();
+          })
+          .catch((err) => {
+            console.error(err);
+          });
       });
     });
     $(document).on("click", "#postModal-cancel-btn", function () {
+      //취소하면 preview 삭제
       $(`.origin-img-preview${postId} *`).remove();
       $(`.add-img-preview${postId} *`).remove();
     });
     $(document).on("click", "#update-Modal-closeBtn", function () {
+      //취소하면 preview 삭제
       $(`.origin-img-preview${postId} *`).remove();
       $(`.add-img-preview${postId} *`).remove();
     });

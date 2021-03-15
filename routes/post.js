@@ -150,6 +150,25 @@ router.delete("/heart/:id", isLoggedIn, async (req, res, next) => {
 router.patch("/:id", isLoggedIn, async (req, res, next) => {
   try {
     const post = await Post.findOne({ where: { id: req.params.id } });
+    post.update({ content: req.body.content });
+    if (req.body.del_imgList.length > 0) {
+      for (let i = 0; i < req.body.del_imgList.length; i++) {
+        await Img.destroy({
+          where: { id: req.body.del_imgList[i] },
+        });
+      }
+    }
+    if (req.body.add_imgList.length > 0) {
+      for (let i = 0; i < req.body.add_imgList.length; i++) {
+        await Img.create({
+          url: req.body.add_imgList[i].url,
+          name: req.body.add_imgList[i].name,
+          size: req.body.add_imgList[i].size,
+          postId: req.params.id,
+        });
+      }
+    }
+    res.send("success");
   } catch (error) {
     console.error(error);
     next(error);

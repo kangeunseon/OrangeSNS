@@ -45,6 +45,7 @@
                 type="hidden"
                 value="<%= post.user.id %>"
               />
+              <% if(user&&user.id==post.user.id){ %>
               <!--게시글 드롭다운버튼-->
               <div class="dropdown" id="post<%=post.id%>-dropdown">
                 <button
@@ -109,6 +110,7 @@
                               id="update-img"
                               type="file"
                               accept="image/*"
+                              multiple
                             />
                           </div>
                         </div>
@@ -137,6 +139,7 @@
               </div>
             </div>
             <!---->
+            <% } %>
             </div>
           </div>
           <div class="panel-body"><%= post.content %></div>
