@@ -43,8 +43,7 @@
                 class="post-user-id"
                 type="hidden"
                 value="<%= post.user.id %>"
-              />
-              <% const follow = user &&
+              /><% const follow = user &&
               user.Followings.map(f=>f.id).includes(post.user.id);
               if(user&&user.id !== post.user.id && !follow){ %>
                 <div class="follow">
@@ -201,9 +200,6 @@
       </article>
         <% count++; } %>
         <input id="postCount" type="hidden" value="<%=count%>">
-      </div>
-      <div class="last-block">
-        <button id="more-btn" type="button" class="btn btn-info">More</button>
       </div>
     </div>
     <script src="/base.js">

@@ -108,11 +108,11 @@ router.post(
         }
       }
       //글쓰고 main/profile 로 새로고침
-      if (req.body.refresh == 0) {
+      if (req.body.refresh == "main") {
         //0은 main
         res.redirect("/");
-      } else if (req.body.refresh == 1) {
-        res.redirect(`/profile/${req.user.id}`); //1은 profile
+      } else if (req.body.refresh == "mypage") {
+        res.redirect(`/myPage/${req.user.id}`); //1은 profile
       }
     } catch (error) {
       console.error(error);
@@ -120,6 +120,60 @@ router.post(
     }
   }
 );
+
+router.get("/hashtag", async (req, res, next) => {
+  const query = req.query.hashtag;
+  console.log(query);
+  if (!query) {
+    return res.redirect("/");
+  }
+  try {
+    const hashtag = await Hashtag.findOne({ where: { title: query } });
+    let posts = [];
+    if (hashtag) {
+      posts = await hashtag.getPosts({
+        include: [
+          {
+            model: User,
+            attributes: ["id", "nick"],
+          },
+        ],
+        order: [["createdAt", "DESC"]],
+      });
+    }
+    let likeList = new Array();
+    if (req.user) {
+      //현재 접속한 유저 아이디 찾기
+      const user = await User.findOne({
+        where: { id: req.user.id },
+      });
+      const liked = await user.getLiked();
+      liked.reverse();
+      for (let like of liked) {
+        likeList.push(like.id);
+      }
+    }
+    //post.id와 일치하는 img 찾기
+    let postIdList = new Array();
+    for (let post of posts) {
+      postIdList.push(post.id);
+    }
+    const imgs = await Img.findAll({
+      where: { postId: postIdList },
+      order: [["createdAt", "DESC"]],
+    });
+    res.render("hashtag", {
+      title: `${query} | 해시태그 검색`,
+      user: req.user,
+      posts: posts,
+      imgs: imgs,
+      likeList: likeList,
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
 
 //게시글 좋아요 추가
 router.post("/heart/:id", isLoggedIn, async (req, res, next) => {

@@ -30,8 +30,24 @@ img {
 .like {
   padding: 10px;
   text-align: center;
+  overflow: auto;
 }
 .last-block {
   text-align: center;
   padding-bottom: 20px;
+}
+.hex {
+  color: #f55354;
+}
+.dropdown {
+  float: right;
+  padding-right: 5px;
+}
+.panel-head {
+  padding-top: 10px;
+  padding-left: 10px;
+}
+.follow {
+  padding-top: 5px;
+  padding-bottom: 5px;
 }

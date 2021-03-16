@@ -27,15 +27,14 @@ router.delete("/:id/unfollow", isLoggedIn, async (req, res, next) => {
   }
 });
 
-router.patch("/:id", isLoggedIn, (req, res, next) => {
-  const id = req.params.id;
-  const nick = req.query.nick;
+router.patch("/:nick", isLoggedIn, (req, res, next) => {
+  const nick = req.params.nick;
   User.update(
     {
       nick: nick,
     },
     {
-      where: { id: id },
+      where: { id: req.user.id },
     }
   )
     .then(() => {

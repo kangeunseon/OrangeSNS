@@ -23,8 +23,9 @@
             ></textarea>
             <div class="img-preview"></div>
             <input id="img-count" type="hidden" name="count" value="0" />
+            <label id="img-label" for="img">사진 업로드</label>
             <input id="img" name="img" type="file" accept="imgae/*" multiple />
-            <input name="refresh" type="hidden" value="main" />
+            <input name="refresh" type="hidden" value="mypage" />
             <div class="form-footer">
               <button class="btn btn-default" type="submit">업로드</button>
             </div>
@@ -44,17 +45,7 @@
                 type="hidden"
                 value="<%= post.user.id %>"
               />
-              <% const follow = user &&
-              user.Followings.map(f=>f.id).includes(post.user.id);
-              if(user&&user.id !== post.user.id && !follow){ %>
-                <div class="follow">
-              <button class="btn btn-default btn-xs" id="user-follow">팔로우하기</button>
-            </div>
-              <% }else if(post.user.id && follow) { %>
-                <div class="follow">
-              <button class="btn btn-default btn-xs" id="user-unfollow">언팔로우하기</button>
-            </div>
-              <% }else if(user&&user.id==post.user.id){ %>
+              <% if(user&&user.id==post.user.id){ %>
               <!--게시글 드롭다운버튼-->
               <div class="dropdown" id="post<%=post.id%>-dropdown">
                 <button
@@ -203,7 +194,7 @@
         <input id="postCount" type="hidden" value="<%=count%>">
       </div>
       <div class="last-block">
-        <button id="more-btn" type="button" class="btn btn-info">More</button>
+        <button id="mypage-more-btn" type="button" class="btn btn-info">More</button>
       </div>
     </div>
     <script src="/base.js">
