@@ -14,6 +14,7 @@ const postRouter = require("./routes/post");
 const userRouter = require("./routes/user");
 const { sequelize } = require("./models"); //DB관련 js파일 폴더
 const passportConfig = require("./passport"); //./passport/index.js와 같음
+const logger = require("./logger");
 
 const app = express();
 sequelize.sync(); //DB-서버 연결
@@ -24,7 +25,13 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs"); //템플릿 엔진 : ejs 사용
 app.set("port", process.env.PORT || 8002); //포트번호 8002사용
 
-app.use(morgan("dev"));
+//NODE_ENV 배포환경or개발환경 판단 환경 변수, .env에 x(정적파일이라)->cross-env
+if (process.env.NODE_ENV === "production") {
+  app.use(morgan("combined")); //배포 환경
+} else {
+  app.use(morgan("dev")); //개발 환경
+}
+
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/img", express.static(path.join(__dirname, "uploads")));
 app.use(express.urlencoded({ extended: false }));
@@ -32,22 +39,38 @@ app.use(express.json());
 
 app.use(cookieParser(process.env.COOKIE_SECRET)); //비밀키 유출방지
 
-app.use(
-  session({
-    resave: false,
-    saveUninitialized: false,
-    secret: process.env.COOKE_SECRET,
-    cookie: {
-      httpOnly: true,
-      secure: false,
-    },
-  })
-);
+const sessionOption = {
+  resave: false,
+  saveUninitialized: false,
+  secret: process.env.COOKE_SECRET,
+  cookie: {
+    httpOnly: true,
+    secure: false,
+  },
+};
+if (process.env.NODE_ENV === "production") {
+  //https 환경일 때 사용
+  sessionOption.proxy = true;
+  sessionOption.cookie.secure = true;
+}
+app.use(session(sessionOption));
+// app.use(
+//   session({
+//     resave: false,
+//     saveUninitialized: false,
+//     secret: process.env.COOKE_SECRET,
+//     cookie: {
+//       httpOnly: true,
+//       secure: false,
+//     },
+//   })
+// );
 
 app.use(flash());
 app.use(passport.initialize()); //req객체에 passport 설정
 app.use(passport.session()); //req.session객체에 passport 정보 저장
 
+logger.info("서버 시작");
 app.use("/", pageRouter);
 app.use("/auth", authRouter);
 app.use("/post", postRouter);
@@ -57,6 +80,7 @@ app.use("/user", userRouter);
 app.use((req, res, next) => {
   const err = new Error("Not Found");
   err.status = 404;
+  logger.error(err.message);
   next(err);
 });
 
@@ -67,6 +91,7 @@ app.use((err, req, res, next) => {
   res.locals.error = req.app.get("env") === "development" ? err : {};
   // render the error page
   res.status(err.status || 500);
+  logger.error(err.message);
   res.render("error");
 });
 
