@@ -1,13 +1,14 @@
 body {
   padding-top: 70px;
-  margin: 0 auto;
 }
-.form-horizontal {
-  text-align: center;
+.container {
+  padding: 100px;
+  width: 100%;
+  margin: 0 auto;
 }
 textarea {
   border-radius: 4px;
-  width: 500px;
+  width: 100%;
   height: 100px;
   padding: 10px;
   border: 1px solid silver;
@@ -16,9 +17,17 @@ textarea {
 .form-footer {
   float: right;
 }
+.form-group {
+  text-align: center;
+}
+#img,
+#update-img {
+  width: 100%;
+}
 img {
   max-width: 100%;
   height: auto;
+  margin: 0px auto;
 }
 .img-preview {
   height: auto;
@@ -50,4 +59,10 @@ img {
 .follow {
   padding-top: 5px;
   padding-bottom: 5px;
+}
+.other-login {
+  text-align: center;
+}
+.login-from-btn {
+  margin: 2px;
 }

@@ -78,16 +78,15 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.get("/myPage/:id", isLoggedIn, async (req, res, next) => {
+router.get("/myPage", isLoggedIn, async (req, res, next) => {
   try {
     const posts = await Post.findAll({
       include: {
         model: User,
-        where: { id: req.params.id },
+        where: { id: req.user.id },
         attributes: ["id", "nick"],
       },
       order: [["createdAt", "DESC"]],
-      limit: 5,
     });
     //post.id와 일치하는 img 찾기
     let postIdList = new Array();
@@ -119,6 +118,49 @@ router.get("/myPage/:id", isLoggedIn, async (req, res, next) => {
     console.error(error);
     next(error);
   }
+});
+
+router.get("/likedList", isLoggedIn, async (req, res, next) => {
+  try {
+    const user = await User.findOne({
+      where: { id: req.user.id },
+    });
+    const liked = await user.getLiked();
+    liked.reverse();
+    const likeIdList = new Array();
+    for (let like of liked) {
+      likeIdList.push(like.id);
+    }
+    const posts = await Post.findAll({
+      where: { id: { [Op.in]: likeIdList } },
+      include: {
+        model: User,
+        attributes: ["id", "nick"],
+      },
+      order: [["createdAt", "DESC"]],
+    });
+    const imgs = await Img.findAll({
+      where: { postId: { [Op.in]: likeIdList } },
+      order: [["postId", "DESC"]],
+    });
+    res.render("likedList", {
+      title: "좋아요 목록",
+      user: req.user,
+      posts: posts,
+      imgs: imgs,
+      likeList: likeIdList,
+    });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+});
+
+router.get("/followList", isLoggedIn, async (req, res, next) => {
+  res.render("followList", {
+    title: "내 팔로우 목록",
+    user: req.user,
+  });
 });
 
 router.get("/more", async (req, res, next) => {
@@ -166,52 +208,6 @@ router.get("/more", async (req, res, next) => {
       imgs: imgs,
       likeList: likeList,
       followings: followList,
-    });
-  } catch (error) {
-    console.error(error);
-    next();
-  }
-});
-
-router.get("/mypage/more", async (req, res, next) => {
-  try {
-    const postId = parseInt(req.query.postId, 10); //last post-id
-    const posts = await Post.findAll({
-      where: { id: { [Op.lt]: postId } }, //Op.lt - postId 미만
-      include: [
-        {
-          model: User,
-          attributes: ["id", "nick"],
-        },
-      ],
-      limit: 5,
-      order: [["createdAt", "DESC"]],
-    });
-    let likeList = new Array();
-    if (req.user) {
-      //현재 접속한 유저 아이디 찾기
-      const user = await User.findOne({
-        where: { id: req.user.id },
-      });
-      const liked = await user.getLiked();
-      liked.reverse();
-      for (let like of liked) {
-        likeList.push(like.id);
-        console.log("좋아요 목록", like.id);
-      }
-    }
-    let postIdList = new Array();
-    for (let post of posts) {
-      postIdList.push(post.id);
-    }
-    const imgs = await Img.findAll({
-      where: { postId: postIdList },
-      order: [["createdAt", "DESC"]],
-    });
-    res.json({
-      posts: posts,
-      imgs: imgs,
-      likeList: likeList,
     });
   } catch (error) {
     console.error(error);

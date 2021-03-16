@@ -3,67 +3,78 @@
   <%- include('head') %>
   <body>
     <%- include('navbar') %>
-    <div class="col-md-6 .col-md-offset-3">
-      <form
-        class="form-horizontal"
-        id="login-form"
-        action="/auth/login"
-        method="post"
-      >
-        <div class="form-group">
-          <label for="inputEmail3" class="col-sm-2 control-label">Email</label>
-          <div class="col-sm-10">
-            <input
-              type="email"
-              class="form-control"
-              id="inputEmail3"
-              placeholder="Email"
-              name="email"
-              required
-              autofocus
-            />
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="inputPassword3" class="col-sm-2 control-label"
-            >Password</label
-          >
-          <div class="col-sm-10">
-            <input
-              type="password"
-              class="form-control"
-              id="inputPassword3"
-              placeholder="Password"
-              name="password"
-              required
-            />
-          </div>
-        </div>
-        <div class="form-group">
-          <div class="col-sm-offset-2 col-sm-10">
-            <button type="submit" class="btn btn-default">로그인</button>
-          </div>
-          <p></p>
-          <div class="col-sm-offset-2 col-sm-10">
-            <button
-              type="submit"
-              class="btn btn-default"
-              onclick="location.href='/auth/kakao'"
+    <div class="container">
+      <div class="login-form">
+        <form
+          class="form-horizontal"
+          id="login-form"
+          action="/auth/login"
+          method="post"
+        >
+          <div class="form-group">
+            <label for="inputEmail3" class="col-sm-5 control-label"
+              >Email</label
             >
-              카카오톡 로그인
-            </button>
+            <div class="col-sm-5">
+              <input
+                type="email"
+                class="form-control"
+                id="inputEmail3"
+                placeholder="Email"
+                name="email"
+                required
+                autofocus
+              />
+            </div>
           </div>
-          <div class="col-sm-offset-2 col-sm-10">
-            <button
-              type="submit"
-              class="btn btn-default"
-              onclick="location.href='/join'"
+          <div class="form-group">
+            <label for="inputPassword3" class="col-sm-5 control-label"
+              >Password</label
             >
-              회원가입
-            </button>
+            <div class="col-sm-5">
+              <input
+                type="password"
+                class="form-control"
+                id="inputPassword3"
+                placeholder="Password"
+                name="password"
+                required
+              />
+            </div>
           </div>
-        </div>
-      </form>
+          <div class="form-group" style="margin-top: 50px">
+            <div class="login-from-btn">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                style="width: 170px"
+              >
+                로그인
+              </button>
+            </div>
+            <div class="login-from-btn">
+              <button
+                type="button"
+                class="btn btn-warning"
+                onclick="location.href='/auth/kakao'"
+                style="width: 170px"
+              >
+                카카오톡 로그인
+              </button>
+            </div>
+            <div class="login-from-btn">
+              <button
+                type="button"
+                class="btn btn-info"
+                onclick="location.href='/join'"
+                style="width: 170px"
+              >
+                회원가입
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   </body>
 </html>

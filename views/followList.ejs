@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <%- include('head') %>
+  <body>
+    <%- include('navbar') %>
+    <div class="container">
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <div class="followings half" style="float: left">
+            <h2>팔로잉 목록 <%= user.Followings.length %></h2>
+            <% if(user.Followings){ for(let following of user.Followings){ %>
+            <div class="following-nick"><%= following.nick %></div>
+            <% }} %>
+          </div>
+          <div class="followers half" style="float: right">
+            <h2>팔로워 목록 <%= user.Followers.length %></h2>
+            <% if(user.Followers){ for(let follower of user.Followers){ %>
+            <div class="follower-nick"><%= follower.nick %></div>
+            <% }} %>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="/base.js"></script>
+  </body>
+</html>

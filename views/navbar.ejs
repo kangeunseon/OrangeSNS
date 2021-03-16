@@ -23,7 +23,7 @@
         <input type="text" name="hashtag" placeholder="태그 검색" />
         <button class="btn" type="submit">검색</button>
       </form>
-      <div class="nav navbar-nav navbar-right">
+      <div class="nav navbar-nav navbar-right" style="padding: 10px">
         <% if(user&&user.id){ %>
         <input id="my-id" type="hidden" value="<%=user.id%>" />
         <div class="dropdown" id="menu-dropdown">
@@ -41,9 +41,12 @@
             <li class="btn">
               <a id="profile-update-btn">닉네임 변경</a>
             </li>
-            <li class="btn"><a href="/">팔로워 목록</a></li>
             <li class="btn">
-              <a href="">좋아요 목록</a>
+              <a href="/myPage">내가 쓴 글 목록</a>
+            </li>
+            <li class="btn"><a href="/followList">팔로워 목록</a></li>
+            <li class="btn">
+              <a href="/likedList">좋아요 목록</a>
             </li>
             <li class="btn"><a href="/auth/logout">로그아웃</a></li>
           </ul>

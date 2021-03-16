@@ -120,203 +120,19 @@ $(document).ready(function () {
           for (let post of res.data.posts) {
             html += `<article>
                       <div class="panel panel-default" id="post${post.id}">
-                        <div class="panel-head">${post.user.nick}
-                        <div class="set-post>
-                        <input class="post-user-id" type="hidden" value="${post.user.id}">`;
-
-            if (myId && myId == post.user.id) {
-              html += `  <!-게시글 드롭다운버튼-->
-                        <div class="dropdown" id="post${post.id}-dropdown">
-                          <button
-                            type="button"
-                            class="btn btn dropdown-toggle"
-                            data-toggle="dropdown"
-                            aria-haspopup="true"
-                            aria-expanded="false"
-                          >
-                          <span class="glyphicon glyphicon-option-vertical"></span>
-                        </button>
-                        <ul class="dropdown-menu" id="dropdown-menu-post${post.id}" role="menu" aria-label="dLabel">
-                          <li id="dropdown-post-update">수정</li>
-                          <li id="dropdown-post-delete">삭제</li>
-                        </ul>
-                        <!--글 수정 모달-->
-                        <div
-                          class="modal fade"
-                          id="update-Modal${post.id}"
-                          tabindex="-1"
-                          role="dialog"
-                          aria-hidden="true"
-                        >
-                          <div class="modal-dialog">
-                            <div class="modal-content">
-                              <div class="modal-header">
-                                <button
-                                  type="button"
-                                  class="close"
-                                  id="update-Modal-closeBtn"
-                                  data-dismiss="modal"
-                                  aria-label="Close"
-                                >
-                                  <span aria-hidden="true">&times;</span>
-                                </button>
-                                <h4 class="modal-title" id="update-post">글 수정하기</h4>
-                              </div>
-                              <div class="modal-body">
-                                <form
-                                  id="form${post.id}"
-                                  action="/post/${post.id}"
-                                  method="post"
-                                  enctype="multipart/form-data"
-                                >
-                                  <div class="form-group">
-                                    <label for="origin-content" class="control-label"
-                                      >수정할 글</label
-                                    >
-                                    <textarea
-                                      type="text"
-                                      maxlength="140"
-                                      class="form-control"
-                                      id="origin-content"
-                                      name="content"
-                                      required
-                                    >${post.content}</textarea>
-                                    <div class="origin-img-preview${post.id}"></div>
-                                    <div class="add-img-preview${post.id}"></div>
-                                    <div class="filebox">
-                                      <lable for="update-img">사진 업로드</lable>
-                                      <input
-                                        id="update-img"
-                                        type="file"
-                                        accept="image/*"
-                                        multiple
-                                      />
-                                    </div>
-                                  </div>
-                                  <div class="modal-footer">
-                                    <button
-                                      id="postModal-update-btn"
-                                      type="submit"
-                                      class="btn btn-primary"
-                                    >
-                                      변경하기
-                                    </button>
-                                    <button
-                                      type="button"
-                                      id="postModal-cancel-btn"
-                                      class="btn btn-default"
-                                      data-dismiss="modal"
-                                    >
-                                      취소하기
-                                    </button>
-                                  </div>
-                                </form>
-                              </div>
-                              
-                            </div>
-                          </div>
-                        </div>
-                        </div>`;
-            }
-            html += `</div>
-                      </div>
-                      <div class="panel-body">${post.content}</div>  
-                      <input id="postId" type="hidden" value="${post.id}" />
-                      <div id="post${post.id}-imgs">
-                  `;
-            for (let img of res.data.imgs) {
-              if (post.id === img.postId) {
-                html += `<div class="post-img">
-                          <img
-                            class="img-responsive"
-                            src="${img.url}"
-                            alt="섬네일"
-                            alt="Responsive image"
-                          />
-                          <input type="hidden" value="${img.id}" id="img-id" />
-                        </div>`;
-              }
-            }
-            html += `</div>`;
-            let index = parseInt(postCount - 1) + parseInt(count);
-            html += `<div class="like" id="like${index}" value="${post.id}">`;
-            if (res.data.likeList.length === 0) {
-              html += `<div class="post-NLike">
-              <button id="nlikeBtn" type="button" class="btn btn" aria-label="Left Align">
-                <span
-                  id="heart"
-                  class="glyphicon glyphicon-heart-empty hex"
-                  aria-hidden="true"
-                ></span>
-            </div>`;
-            } else {
-              let check = false; //좋아요 눌렀는지 확인하는 변수
-              for (let likeId of res.data.likeList) {
-                if (likeId === post.id) {
-                  check = true;
-                  break;
-                }
-              }
-              if (check) {
-                html += `<div class="post-Like">
-                <button id="likeBtn" type="button" class="btn btn" aria-label="Left Align">
-                  <span
-                    id="heart"
-                    class="glyphicon glyphicon-heart hex"
-                    aria-hidden="true"
-                  ></span>
-              </div>`;
-              } else {
-                html += `<div class="post-NLike">
-                <button id="nlikeBtn" type="button" class="btn btn" aria-label="Left Align">
-                  <span
-                    id="heart"
-                    class="glyphicon glyphicon-heart-empty hex"
-                    aria-hidden="true"
-                  ></span>
-              </div>`;
-              }
-            }
-            html += `</div></div></article>`;
-            count++;
-          }
-          html += `<input id="postCount" type="hidden" value="${
-            postCount + (count - 1)
-          }">`;
-          $(".posts").append(html);
-        } else {
-          alert("더 이상 볼 게시글이 없습니다.");
-        }
-      })
-      .catch((err) => {
-        console.error(err);
-      });
-  });
-
-  $("#mypage-more-btn").on("click", () => {
-    const postId = $("input[id=postId]").last().val();
-    const postCount = parseInt($("input[id=postCount]").last().val()); //페이징 확인 변수
-    const myId = $("input[id=my-id]").val();
-    console.log(myId);
-    let count = 1;
-    console.log(postId, ",", postCount);
-    axios
-      .get(`/mypage/more?postId=${postId}`)
-      .then((res) => {
-        console.log(res.data);
-        if (res.data.posts.length > 0) {
-          let html = "";
-          for (let post of res.data.posts) {
-            html += `<article>
-                      <div class="panel panel-default" id="post${post.id}">
-                        <div class="panel-head">${post.user.nick}
-                        <div class="set-post>
-                        <input class="post-user-id" type="hidden" value="${post.user.id}">`;
+                        <div class="panel-head">
+                          ${post.user.nick}
+                          <div class="set-post">
+                            <input class="post-user-id" type="hidden" value="${post.user.id}" />`;
             const follow = myId && res.data.followings.includes(post.user.id);
-            if (myId && post.user.id != myId && !follow) {
-              html += `<button class="btn btn-default btn-xs" id="user-follow">팔로우하기</button>`;
-            } else if (post.user.id && follow) {
-              html += `<button class="btn btn-default btn-xs" id="user-unfollow">언팔로우하기</button>`;
+            if (post.user.id != myId && !follow) {
+              html += `<div class="follow">
+                        <button class="btn btn-default btn-xs" id="user-follow">팔로우하기</button>
+                      </div>`;
+            } else if (post.user.id != myId && follow) {
+              html += `<div class="follow">
+                        <button class="btn btn-default btn-xs" id="user-unfollow">언팔로우하기</button>
+                      </div>`;
             } else if (myId && myId == post.user.id) {
               html += `  <!-게시글 드롭다운버튼-->
                         <div class="dropdown" id="post${post.id}-dropdown">
@@ -490,7 +306,7 @@ $(document).ready(function () {
   $(document).on("click", "#user-follow", function () {
     const myId = $("input[id=my-id]").val();
     if (myId) {
-      const userId = $(this).prev().attr("value");
+      const userId = $(this).parent().prev().attr("value");
       console.log(userId);
       if (userId !== myId) {
         if (confirm("팔로잉하시겠습니까?")) {
@@ -511,7 +327,7 @@ $(document).ready(function () {
   $(document).on("click", "#user-unfollow", function () {
     const myId = $("input[id=my-id]").val();
     if (myId) {
-      const userId = $(this).prev().attr("value");
+      const userId = $(this).parent().prev().attr("value");
       console.log(userId);
       if (userId !== myId) {
         if (confirm("정말 언팔로잉 하시겠습니까?")) {
