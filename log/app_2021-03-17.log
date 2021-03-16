@@ -1,24 +1,3 @@
-{ message: '404 error',
-  level: 'info',
-  timestamp: '2021-03-17 06:48:50' }
-{ message: 'Not Found',
-  level: 'error',
-  timestamp: '2021-03-17 06:48:50' }
-{ message: '404 error',
-  level: 'info',
-  timestamp: '2021-03-17 06:49:02' }
-{ message: 'Not Found',
-  level: 'error',
-  timestamp: '2021-03-17 06:49:02' }
-{ message: '404 error',
-  level: 'info',
-  timestamp: '2021-03-17 06:50:11' }
-{ message: 'Not Found',
-  level: 'error',
-  timestamp: '2021-03-17 06:50:11' }
 { message: '서버 시작',
   level: 'info',
-  timestamp: '2021-03-17 06:56:48' }
-{ message: '서버 시작',
-  level: 'info',
-  timestamp: '2021-03-17 06:57:30' }
+  timestamp: '2021-03-17 07:23:35' }
