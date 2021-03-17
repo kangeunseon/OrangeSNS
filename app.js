@@ -5,6 +5,10 @@ const path = require("path");
 const session = require("express-session");
 const flash = require("connect-flash"); //일회성 메세지들을 웹 브라우저에 나타냄
 const passport = require("passport");
+const helmet = require("helmet");
+const hpp = require("hpp");
+const redis = require("redis");
+const RedisStore = require("connect-redis")(session);
 require("dotenv").config();
 
 //router 인스턴스를 쓸 때는 변우 이름 뒤에 Router를 붙인다.
@@ -28,6 +32,8 @@ app.set("port", process.env.PORT || 8002); //포트번호 8002사용
 //NODE_ENV 배포환경or개발환경 판단 환경 변수, .env에 x(정적파일이라)->cross-env
 if (process.env.NODE_ENV === "production") {
   app.use(morgan("combined")); //배포 환경
+  app.use(helmet());
+  app.use(hpp());
 } else {
   app.use(morgan("dev")); //개발 환경
 }
@@ -39,6 +45,11 @@ app.use(express.json());
 
 app.use(cookieParser(process.env.COOKIE_SECRET)); //비밀키 유출방지
 
+const client = redis.createClient(
+  process.env.REDIS_PORT,
+  process.env.REDIS_HOST
+);
+client.auth(process.env.REDIS_PASSWORD);
 const sessionOption = {
   resave: false,
   saveUninitialized: false,
@@ -47,6 +58,13 @@ const sessionOption = {
     httpOnly: true,
     secure: false,
   },
+  store: new RedisStore({
+    client: client,
+    host: process.env.REDIS_HOST,
+    port: process.env.REDIS_PORT,
+    pass: process.env.REDIS_PASSWORD,
+    logErrors: true,
+  }),
 };
 if (process.env.NODE_ENV === "production") {
   //https 환경일 때 사용
